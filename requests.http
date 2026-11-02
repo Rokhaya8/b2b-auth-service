@@ -1,0 +1,69 @@
+### Tester l'API depuis IntelliJ : cliquer sur la flèche verte à gauche de chaque requête
+
+### 1. Inscription d'une entreprise
+POST http://localhost:8081/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Atlas Distribution",
+  "email": "contact@atlas.ma",
+  "password": "motdepasse123",
+  "ice": "001234567000089",
+  "city": "Marrakech",
+  "phone": "0600000000",
+  "address": "Avenue Mohammed V"
+}
+
+### 2. Connexion (le token est gardé pour les requêtes suivantes)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "contact@atlas.ma",
+  "password": "motdepasse123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+### 3. Qui suis-je ? (avec le token)
+GET http://localhost:8081/api/me
+Authorization: Bearer {{token}}
+
+### 4. Sans token : doit répondre 401
+GET http://localhost:8081/api/me
+
+### 5. Changer son mot de passe (avec le token)
+PUT http://localhost:8081/api/account/password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "motdepasse123",
+  "newPassword": "nouveaumotdepasse456"
+}
+
+### 6. Mot de passe oublié : le token de réinitialisation s'affiche dans la console du serveur
+POST http://localhost:8081/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "contact@atlas.ma"
+}
+
+### 7. Réinitialiser avec le token reçu (remplacer COLLER_LE_TOKEN_ICI)
+POST http://localhost:8081/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "COLLER_LE_TOKEN_ICI",
+  "newPassword": "encoreunautre789"
+}
+
+### 8. Connexion administrateur (créé au démarrage)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@b2b.local",
+  "password": "admin12345"
+}
