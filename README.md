@@ -8,8 +8,8 @@ time-limited token.
 > **Team project.** This module comes from a B2B platform built by a team of about ten
 > students (ENSA Marrakech, 2025): products, cart, orders, payment, delivery, reviews and
 > statistics were developed by other team members. **Authentication and account
-> management was my part.** This repository extracts it as a standalone service that runs
-> on its own, with the changes listed in [What I changed](#what-i-changed-after-the-project).
+> management was my part.** This repository extracts it as a
+> [standalone service](#standalone-version) that runs on its own.
 
 ## Features
 
@@ -63,7 +63,7 @@ src/main/java/com/b2b/
   run `B2bAuthServiceApplication`.
 - **Command line:** `mvn spring-boot:run`
 
-The API starts on http://localhost:8080 with an in-memory **H2** database: nothing to
+The API starts on http://localhost:8081 with an in-memory **H2** database: nothing to
 install, and the data is reset at each restart.
 
 ### Try it
@@ -76,15 +76,15 @@ With curl:
 
 ```bash
 # Register a company
-curl -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json" \
+curl -X POST http://localhost:8081/api/auth/register -H "Content-Type: application/json" \
   -d '{"name":"Atlas Distribution","email":"contact@atlas.ma","password":"motdepasse123","ice":"001234567000089"}'
 
 # Log in and copy the "token" from the response
-curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" \
+curl -X POST http://localhost:8081/api/auth/login -H "Content-Type: application/json" \
   -d '{"email":"contact@atlas.ma","password":"motdepasse123"}'
 
 # Call a protected route
-curl http://localhost:8080/api/me -H "Authorization: Bearer <token>"
+curl http://localhost:8081/api/me -H "Authorization: Bearer <token>"
 ```
 
 Without a valid token, protected routes answer **401 Unauthorized**.
@@ -96,32 +96,21 @@ default values meant **only for local development**:
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
+| `PORT` | HTTP port of the API | `8081` |
 | `JWT_SECRET` | Key used to sign tokens (at least 32 characters) | development value |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Administrator created at startup | `admin@b2b.local` / `admin12345` |
 | `MAIL_ENABLED` | Send real emails | `false`: the reset email is printed in the server console |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | SMTP settings | — |
 
-The H2 console is available at http://localhost:8080/h2-console
+The H2 console is available at http://localhost:8081/h2-console
 (JDBC URL `jdbc:h2:mem:b2bauth`, user `sa`, no password).
 
-## What I Changed After the Project
+## Standalone Version
 
-The endpoints, entities and password-reset logic are the code of the team project. To
-make the module run on its own and work correctly, I made the following changes:
-
-- **Security enabled.** In the team version, every route was open
-  (`anyRequest().permitAll()`, left from development) and the JWT filter existed but was
-  never registered, so the server never read the token: `/api/me` and the password change
-  could not identify the user. The filter is now part of the security chain, routes other
-  than `/api/auth/**` require a valid token, and the API is stateless.
-- **No secrets in the code.** Database, email and JWT settings come from environment
-  variables; the hard-coded JWT key fallback was removed.
-- **Runs without external services.** H2 in-memory database, and reset emails printed in
-  the console by default.
-- **Bug fixes.** `Company.setMustChangePassword` did nothing and the login always returned
-  `mustChangePassword: false`; changing the password of an administrator failed with a
-  server error (only companies were handled).
-- **Demo administrator** created at startup, and a `requests.http` file to test the API.
+This repository is a standalone version of the module: it runs on its own, with an
+in-memory database and no external service. Compared with the team version, security is
+enabled (protected routes, JWT checked on each request), configuration comes from
+environment variables, and reset emails are printed in the console by default.
 
 ## Limitations and Next Steps
 
